@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kavindra Maheswara // Developer, Tech Specialist & Video Editor</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            DEFAULT: '#08080a',
+                            surface: '#121216',
+                            card: '#18181f',
+                            border: '#2a2a35'
+                        },
+                        accent: {
+                            cyan: '#00f0ff',
+                            purple: '#bd00ff',
+                            gold: '#ffd700',
+                            rose: '#ff2a6d'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                        display: ['Space Grotesk', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- GSAP & ScrollTrigger CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        body {
+            background-color: #08080a;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .card-perspective {
+            perspective: 1500px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+        }
+
+        .tcg-card:hover .card-inner,
+        .tcg-card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            inset: 0;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .card-back {
+            background-color: #121216;
+            border: 2px solid rgba(255, 215, 0, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .card-back img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, rgba(24, 24, 31, 0.98) 0%, rgba(12, 12, 16, 0.99) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: rotateY(180deg);
+        }
+
+        .card-front::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(189, 0, 255, 0.4), rgba(0, 240, 255, 0.2));
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0.8;
+        }
+
+        .foil-shine {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(125deg, transparent 0%, rgba(255, 255, 255, 0.05) 30%, rgba(255, 215, 0, 0.12) 50%, transparent 70%);
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #08080a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a35;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f50;
+        }
+    </style>
+</head>
+<body class="bg-dark text-gray-100 antialiased selection:bg-accent-gold selection:text-black">
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-dark-surface border border-accent-gold/40 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3">
+        <i data-lucide="check-circle" class="w-5 h-5 text-accent-gold"></i>
+        <span id="toast-message" class="text-sm font-medium">Pesan berhasil dikirim.</span>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="fixed top-0 left-0 right-0 z-40 bg-dark/85 backdrop-blur-md border-b border-dark-border/50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-gold to-accent-purple p-[1px] shadow-lg shadow-accent-gold/20 flex-shrink-0">
+                    <div class="w-full h-full bg-dark rounded-[7px] flex items-center justify-center font-display font-bold text-lg text-accent-gold group-hover:bg-transparent group-hover:text-black transition-all">
+                        KM
+                    </div>
+                </div>
+                <div>
+                    <span class="font-display font-bold text-base sm:text-lg tracking-wide block">Kavindra Maheswara</span>
+                    <span class="text-[10px] sm:text-xs font-mono text-gray-400 block tracking-wider">DEVELOPER & TECH SPECIALIST</span>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
+                <a href="#hero" class="hover:text-accent-gold transition-colors">Dek Kartu</a>
+                <a href="#services" class="hover:text-accent-gold transition-colors">Layanan</a>
+                <a href="#skills" class="hover:text-accent-gold transition-colors">Keahlian</a>
+                <a href="#projects" class="hover:text-accent-gold transition-colors">Portofolio</a>
+            </nav>
+
+            <div class="flex items-center gap-4">
+                <a href="#contact" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-accent-gold/10 to-accent-purple/10 border border-accent-gold/30 text-accent-gold hover:bg-accent-gold hover:text-black font-semibold text-sm transition-all shadow-lg shadow-accent-gold/10">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Hubungi Saya</span>
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden p-2.5 rounded-xl bg-dark-surface border border-dark-border text-gray-300 hover:text-accent-gold focus:outline-none">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-dark-surface/95 border-b border-dark-border px-6 py-6 space-y-4 backdrop-blur-xl">
+            <a href="#hero" class="block text-gray-300 hover:text-accent-gold font-medium">Dek Kartu</a>
+            <a href="#services" class="block text-gray-300 hover:text-accent-gold font-medium">Layanan</a>
+            <a href="#skills" class="block text-gray-300 hover:text-accent-gold font-medium">Keahlian</a>
+            <a href="#projects" class="block text-gray-300 hover:text-accent-gold font-medium">Portofolio</a>
+            <a href="#contact" class="block text-center py-3 rounded-xl bg-accent-gold text-black font-semibold">Hubungi Saya</a>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main>
+        
+        <!-- HERO SECTION WITH SCROLLYTELLING STACKING CARDS -->
+        <section id="hero" class="relative h-screen w-full overflow-hidden bg-dark flex flex-col items-center justify-center pt-20">
+            <div class="absolute inset-0 bg-[radial-gradient(#2a2a35_1px,transparent_1px)] [background-size:32px_32px] opacity-25 pointer-events-none"></div>
+
+            <div id="scroll-prompt" class="absolute top-24 sm:top-28 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-dark-surface/80 border border-dark-border text-xs font-mono text-accent-gold shadow-xl backdrop-blur-md transition-opacity duration-500 text-center mx-4">
+                <i data-lucide="mouse-pointer-click" class="w-4 h-4 animate-bounce flex-shrink-0"></i>
+                <span>Gulir ke bawah untuk menyatukan dek kartu portfolio</span>
+            </div>
+
+            <!-- Stacking Cards Container -->
+            <div id="cards-container" class="relative w-full max-w-7xl h-[520px] sm:h-[560px] md:h-[620px] flex items-center justify-center px-4 perspective-[2000px]">
+                
+                <!-- CARD 1: ABOUT ME -->
+                <div class="portfolio-card tcg-card card-perspective absolute w-[260px] sm:w-[330px] md:w-[370px] h-[430px] sm:h-[470px] md:h-[510px] cursor-pointer select-none" data-card-id="about" onclick="toggleCardFlip(this); openCardModal('about')">
+                    <div class="card-inner">
+                        <div class="card-back">
+                            <img src="3da39cea425e1fc2b8c7b01d7b0d6c5c.jpg" alt="Yu-Gi-Oh Card Back">
+                        </div>
+                        <div class="card-front p-5 sm:p-6 flex flex-col justify-between">
+                            <div class="foil-shine"></div>
+                            <div>
+                                <div class="flex items-center justify-between mb-3 sm:mb-4">
+                                    <span class="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-accent-gold bg-accent-gold/10 px-2.5 py-1 rounded-full border border-accent-gold/20">Profil // Identitas</span>
+                                    <span class="text-xs font-mono text-gray-400">#KM-01</span>
+                                </div>
+                                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-accent-gold/20 to-accent-purple/20 border border-accent-gold/30 flex items-center justify-center mb-4 sm:mb-5 shadow-inner text-accent-gold">
+                                    <i data-lucide="user" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+                                </div>
+                                <h2 class="font-display font-bold text-xl sm:text-2xl text-white mb-2 sm:mb-3">Kavindra Maheswara</h2>
+                                <p class="text-gray-300 text-xs sm:text-sm leading-relaxed">
+                                    Profesional multi-talenta di bidang pengembangan web, rekayasa perangkat lunak, perbaikan hardware, dan produksi multimedia.
+                                </p>
+                            </div>
+                            <div class="pt-3 sm:pt-4 border-t border-white/10 flex items-center justify-between">
+                                <div class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-mono text-gray-400">
+                                    <i data-lucide="shield-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent-gold"></i>
+                                    <span>Terverifikasi</span>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg bg-white/5 text-accent-gold text-[11px] sm:text-xs font-semibold uppercase tracking-wider">Periksa</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: WEB CODING & APPS -->
+                <div class="portfolio-card tcg-card card-perspective absolute w-[260px] sm:w-[330px] md:w-[370px] h-[430px] sm:h-[470px] md:h-[510px] cursor-pointer select-none" data-card-id="webdev" onclick="toggleCardFlip(this); openCardModal('webdev')">
+                    <div class="card-inner">
+                        <div class="card-back">
+                            <img src="3da39cea425e1fc2b8c7b01d7b0d6c5c.jpg" alt="Yu-Gi-Oh Card Back">
+                        </div>
+                        <div class="card-front p-5 sm:p-6 flex flex-col justify-between">
+                            <div class="foil-shine"></div>
+                            <div>
+                                <div class="flex items-center justify-between mb-3 sm:mb-4">
+                                    <span class="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-accent-purple bg-accent-purple/10 px-2.5 py-1 rounded-full border border-accent-purple/20">Keahlian // 02</span>
+                                    <span class="text-xs font-mono text-gray-400">#KM-02</span>
+                                </div>
+                                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-accent-purple/20 to-accent-rose/20 border border-accent-purple/30 flex items-center justify-center mb-4 sm:mb-5 shadow-inner text-accent-purple">
+                                    <i data-lucide="code" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+                                </div>
+                                <h2 class="font-display font-bold text-xl sm:text-2xl text-white mb-2 sm:mb-3">Coding Web & Aplikasi</h2>
+                                <p class="text-gray-300 text-xs sm:text-sm leading-relaxed">
+                                    Membangun situs web responsif modern dan aplikasi berbasis web interaktif dengan performa optimal dan estetika elegan.
+                                </p>
+                            </div>
+                            <div class="pt-3 sm:pt-4 border-t border-white/10 flex items-center justify-between">
+                                <div class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-mono text-gray-400">
+                                    <i data-lucide="cpu" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent-purple"></i>
+                                    <span>Full-Stack</span>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg bg-white/5 text-accent-purple text-[11px] sm:text-xs font-semibold uppercase tracking-wider">Periksa</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3: PHONE & LAPTOP REPAIR -->
+                <div class="portfolio-card tcg-card card-perspective absolute w-[260px] sm:w-[330px] md:w-[370px] h-[430px] sm:h-[470px] md:h-[510px] cursor-pointer select-none" data-card-id="hardware" onclick="toggleCardFlip(this); openCardModal('hardware')">
+                    <div class="card-inner">
+                        <div class="card-back">
+                            <img src="3da39cea425e1fc2b8c7b01d7b0d6c5c.jpg" alt="Yu-Gi-Oh Card Back">
+                        </div>
+                        <div class="card-front p-5 sm:p-6 flex flex-col justify-between">
+                            <div class="foil-shine"></div>
+                            <div>
+                                <div class="flex items-center justify-between mb-3 sm:mb-4">
+                                    <span class="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-accent-cyan bg-accent-cyan/10 px-2.5 py-1 rounded-full border border-accent-cyan/20">Layanan // 03</span>
+                                    <span class="text-xs font-mono text-gray-400">#KM-03</span>
+                                </div>
+                                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-accent-cyan/20 to-accent-gold/20 border border-accent-cyan/30 flex items-center justify-center mb-4 sm:mb-5 shadow-inner text-accent-cyan">
+                                    <i data-lucide="cpu" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+                                </div>
+                                <h2 class="font-display font-bold text-xl sm:text-2xl text-white mb-2 sm:mb-3">Servis HP & Laptop</h2>
+                                <p class="text-gray-300 text-xs sm:text-sm leading-relaxed">
+                                    Solusi perbaikan perangkat keras dan perangkat lunak handal untuk smartphone serta laptop dengan penanganan teliti dan profesional.
+                                </p>
+                            </div>
+                            <div class="pt-3 sm:pt-4 border-t border-white/10 flex items-center justify-between">
+                                <div class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-mono text-gray-400">
+                                    <i data-lucide="wrench" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent-cyan"></i>
+                                    <span>Servis Ahli</span>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg bg-white/5 text-accent-cyan text-[11px] sm:text-xs font-semibold uppercase tracking-wider">Periksa</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 4: VIDEO EDITING -->
+                <div class="portfolio-card tcg-card card-perspective absolute w-[260px] sm:w-[330px] md:w-[370px] h-[430px] sm:h-[470px] md:h-[510px] cursor-pointer select-none" data-card-id="video" onclick="toggleCardFlip(this); openCardModal('video')">
+                    <div class="card-inner">
+                        <div class="card-back">
+                            <img src="3da39cea425e1fc2b8c7b01d7b0d6c5c.jpg" alt="Yu-Gi-Oh Card Back">
+                        </div>
+                        <div class="card-front p-5 sm:p-6 flex flex-col justify-between">
+                            <div class="foil-shine"></div>
+                            <div>
+                                <div class="flex items-center justify-between mb-3 sm:mb-4">
+                                    <span class="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-accent-rose bg-accent-rose/10 px-2.5 py-1 rounded-full border border-accent-rose/20">Kreatif // 04</span>
+                                    <span class="text-xs font-mono text-gray-400">#KM-04</span>
+                                </div>
+                                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-accent-rose/20 to-accent-purple/20 border border-accent-rose/30 flex items-center justify-center mb-4 sm:mb-5 shadow-inner text-accent-rose">
+                                    <i data-lucide="video" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+                                </div>
+                                <h2 class="font-display font-bold text-xl sm:text-2xl text-white mb-2 sm:mb-3">Penyuntingan Video</h2>
+                                <p class="text-gray-300 text-xs sm:text-sm leading-relaxed">
+                                    Pembuatan dan penyuntingan video sinematik, konten media sosial, dan materi promosi digital berkualitas tinggi.
+                                </p>
+                            </div>
+                            <div class="pt-3 sm:pt-4 border-t border-white/10 flex items-center justify-between">
+                                <div class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-mono text-gray-400">
+                                    <i data-lucide="film" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent-rose"></i>
+                                    <span>Produksi Media</span>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg bg-white/5 text-accent-rose text-[11px] sm:text-xs font-semibold uppercase tracking-wider">Periksa</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 5: CONTACT -->
+                <div class="portfolio-card tcg-card card-perspective absolute w-[260px] sm:w-[330px] md:w-[370px] h-[430px] sm:h-[470px] md:h-[510px] cursor-pointer select-none" data-card-id="contact" onclick="toggleCardFlip(this); openCardModal('contact')">
+                    <div class="card-inner">
+                        <div class="card-back">
+                            <img src="3da39cea425e1fc2b8c7b01d7b0d6c5c.jpg" alt="Yu-Gi-Oh Card Back">
+                        </div>
+                        <div class="card-front p-5 sm:p-6 flex flex-col justify-between">
+                            <div class="foil-shine"></div>
+                            <div>
+                                <div class="flex items-center justify-between mb-3 sm:mb-4">
+                                    <span class="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full border border-emerald-400/20">Kontak // 05</span>
+                                    <span class="text-xs font-mono text-gray-400">#KM-05</span>
+                                </div>
+                                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-accent-cyan/20 border border-emerald-400/30 flex items-center justify-center mb-4 sm:mb-5 shadow-inner text-emerald-400">
+                                    <i data-lucide="mail" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+                                </div>
+                                <h2 class="font-display font-bold text-xl sm:text-2xl text-white mb-2 sm:mb-3">Hubungi Kavindra</h2>
+                                <p class="text-gray-300 text-xs sm:text-sm leading-relaxed">
+                                    Butuh jasa pembuatan web, perbaikan gadget, atau edit video? Mari diskusikan proyek atau kebutuhan servis Anda sekarang.
+                                </p>
+                            </div>
+                            <div class="pt-3 sm:pt-4 border-t border-white/10 flex items-center justify-between">
+                                <div class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-mono text-emerald-400">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span>Siap Menerima Pesanan</span>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] sm:text-xs font-semibold uppercase tracking-wider">Kontak</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SERVICES & EXPERTISE SECTION -->
+        <section id="services" class="py-24 sm:py-28 px-4 sm:px-6 bg-dark-surface relative border-t border-dark-border">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto mb-16">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/30 text-accent-gold text-xs font-mono mb-4">
+                        <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                        <span>CAKUPAN LAYANAN UTAMA</span>
+                    </div>
+                    <h2 class="font-display font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-white mb-4">Solusi Profesional & Teknologi</h2>
+                    <p class="text-gray-400 text-sm">Empat pilar keahlian utama untuk memenuhi kebutuhan digital dan perangkat keras Anda.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+                    <div class="tcg-card p-6 sm:p-8 rounded-2xl border border-dark-border bg-dark-card hover:border-accent-gold/50 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-accent-gold/10 border border-accent-gold/30 flex items-center justify-center text-accent-gold mb-6">
+                            <i data-lucide="code" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-display font-bold text-xl text-white mb-3">Coding Website</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">Pengembangan situs web responsif, modern, berkecepatan tinggi dengan HTML, JavaScript, Tailwind, dan struktur yang bersih.</p>
+                        <span class="text-xs font-mono text-accent-gold">Frontend & Desain UI</span>
+                    </div>
+
+                    <div class="tcg-card p-6 sm:p-8 rounded-2xl border border-dark-border bg-dark-card hover:border-accent-purple/50 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-accent-purple/10 border border-accent-purple/30 flex items-center justify-center text-accent-purple mb-6">
+                            <i data-lucide="monitor-smartphone" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-display font-bold text-xl text-white mb-3">Aplikasi Berbasis Web</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">Merancang dan membangun aplikasi web fungsional dinamis, sistem manajemen, atau alat otomatisasi berbasis web.</p>
+                        <span class="text-xs font-mono text-accent-purple">Web Apps & Sistem</span>
+                    </div>
+
+                    <div class="tcg-card p-6 sm:p-8 rounded-2xl border border-dark-border bg-dark-card hover:border-accent-cyan/50 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 flex items-center justify-center text-accent-cyan mb-6">
+                            <i data-lucide="wrench" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-display font-bold text-xl text-white mb-3">Servis HP & Laptop</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">Perbaikan hardware (ganti komponen, layar, baterai) dan software (flashing, perbaikan sistem, optimasi) untuk HP & laptop.</p>
+                        <span class="text-xs font-mono text-cyan-400">Hardware & Software</span>
+                    </div>
+
+                    <div class="tcg-card p-6 sm:p-8 rounded-2xl border border-dark-border bg-dark-card hover:border-accent-rose/50 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-accent-rose/10 border border-accent-rose/30 flex items-center justify-center text-accent-rose mb-6">
+                            <i data-lucide="video" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-display font-bold text-xl text-white mb-3">Penyuntingan Video</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-4">Jasa editing video kreatif untuk konten YouTube, TikTok, Reels, promosi produk, dan video dokumenter profesional.</p>
+                        <span class="text-xs font-mono text-accent-rose">Editing & Motion</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SKILLS BREAKDOWN SECTION -->
+        <section id="skills" class="py-24 sm:py-28 px-4 sm:px-6 bg-dark relative border-t border-dark-border">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto mb-16">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-xs font-mono mb-4">
+                        <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                        <span>KOMPETENSI TEKNIS</span>
+                    </div>
+                    <h2 class="font-display font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-white mb-4">Keahlian & Penguasaan Alat</h2>
+                    <p class="text-gray-400 text-sm">Tingkat penguasaan dalam pemrograman, perbaikan perangkat, dan produksi media.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="tcg-card p-6 sm:p-8 rounded-2xl border border-dark-border bg-dark-card">
+                        <h3 class="font-display font-bold text-xl text-white mb-6 flex items-center gap-3">
+                            <i data-lucide="code" class="w-5 h-5 text-accent-gold"></i>
+                            <span>Web & App Development</span>
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1.5">
+                                    <span class="text-gray-300">HTML5, CSS3, JavaScript</span>
+                                    <span class="text-accent-gold">95%</span>
+                                </div>
+                                <div class="w-full h-2 bg-dark rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-accent-gold to-accent-purple rounded-full" style="width: 95%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1.5">
+                                    <span class="text-gray-300">Tailwind CSS & Responsive UI</span>
+                                    <span class="text-accent-gold">92%</span>
+                                </div>
+                                <div class="w-full h-2 bg-dark rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-accent-gold to-accent-purple rounded-full" style="width: 92%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1.5">
+                                    <span class="text-gray-300">Web Apps & Logika Interaktif</span>
+                                    <span class="text-accent-gold">90%</span>
+                                </div>
+                                <div class="w-full h-2 bg-dark rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-accent-gold to-accent-purple rounded-full" style="width: 90%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tcg-card p-6 sm:p-8 rounded-2xl border border-dark-border bg-dark-card">
+                        <h3 class="font-display font-bold text-xl text-white mb-6 flex items-center gap-3">
+                            <i data-lucide="wrench" class="w-5 h-5 text-accent-cyan"></i>
+                            <span>Servis Hardware & Perangkat</span>
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1.5">
+                                    <span class="text-gray-300">Perbaikan Laptop & Komputer</span>
+                                    <span class="text-accent-cyan">92%</span>
+                                </div>
+                                <div class="w-full h-2 bg-dark rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-accent-cyan to-accent-gold rounded-full" style="width: 92%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1.5">
+                                    <span class="text-gray-300">Servis & Flashing Smartphone</span>
+                                    <span class="text-accent-cyan">90%</span>
+                                </div>
+                                <div class="w-full h-2 bg-dark rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-accent-cyan to-accent-gold rounded-full" style="width: 90%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1.5">
+                                    <span class="text-gray-300">Troubleshooting Sistem</span>
+                                    <span class="text-accent-cyan">94%</span>
+                                </div>
+                                <div class="w-full h-2 bg-dark rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-accent-cyan to-accent-gold rounded-full" style="width: 94%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tcg-card p-6 sm:p-8 rounded-2xl border border-dark-border bg-dark-card">
+                        <h3 class="font-display font-bold text-xl text-white mb-6 flex items-center gap-3">
+                            <i data-lucide="film" class="w-5 h-5 text-accent-rose"></i>
+                            <span>Video Editing & Media</span>
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1.5">
+                                    <span class="text-gray-300">Adobe Premiere / CapCut / Editor</span>
+                                    <span class="text-accent-rose">94%</span>
+                                </div>
+                                <div class="w-full h-2 bg-dark rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-accent-rose to-accent-purple rounded-full" style="width: 94%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1.5">
+                                    <span class="text-gray-300">Motion Graphics & Efek Visual</span>
+                                    <span class="text-accent-rose">88%</span>
+                                </div>
+                                <div class="w-full h-2 bg-dark rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-accent-rose to-accent-purple rounded-full" style="width: 88%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1.5">
+                                    <span class="text-gray-300">Color Grading & Audio Mixing</span>
+                                    <span class="text-accent-rose">90%</span>
+                                </div>
+                                <div class="w-full h-2 bg-dark rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-accent-rose to-accent-purple rounded-full" style="width: 90%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJECTS SHOWCASE -->
+        <section id="projects" class="py-24 sm:py-28 px-4 sm:px-6 bg-dark-surface relative border-t border-dark-border">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-16">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-purple/10 border border-accent-purple/30 text-accent-purple text-xs font-mono mb-4">
+                            <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+                            <span>GALERI KARYA</span>
+                        </div>
+                        <h2 class="font-display font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-white">Proyek & Portofolio</h2>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="project-card tcg-card rounded-2xl overflow-hidden group cursor-pointer border border-dark-border hover:border-accent-gold/50 transition-all bg-dark-card" onclick="openProjectModal('Website Company Profile Modern', 'HTML, Tailwind CSS, JavaScript', 'https://placehold.co/800x500/121216/ffd700?text=Web+Profile', 'Pembuatan website profil perusahaan responsif dengan desain mewah, animasi halus, dan navigasi ramah pengguna.')">
+                        <div class="h-56 relative overflow-hidden bg-dark">
+                            <img src="https://placehold.co/800x500/121216/ffd700?text=Website+Development" alt="Web Dev" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-dark/80 backdrop-blur-md border border-accent-gold/40 text-accent-gold text-xs font-mono">Coding Website</span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-display font-bold text-xl text-white mb-2 group-hover:text-accent-gold transition-colors">Situs Web Interaktif</h3>
+                            <p class="text-gray-400 text-sm mb-4 line-clamp-2">Pengembangan frontend modern dengan performa tinggi dan tampilan memukau.</p>
+                            <div class="flex items-center justify-between pt-4 border-t border-white/10 text-xs font-mono text-gray-400">
+                                <span>HTML / Tailwind / JS</span>
+                                <span class="text-accent-gold flex items-center gap-1">Detail <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card tcg-card rounded-2xl overflow-hidden group cursor-pointer border border-dark-border hover:border-accent-cyan/50 transition-all bg-dark-card" onclick="openProjectModal('Pemeliharaan & Servis Laptop Hardware', 'Diagnostik, Penggantian Komponen, Perbaikan Sistem', 'https://placehold.co/800x500/121216/00f0ff?text=Laptop+Service', 'Layanan perbaikan menyeluruh untuk masalah mati total, overheat, penggantian SSD/RAM, dan instalasi sistem operasi.')">
+                        <div class="h-56 relative overflow-hidden bg-dark">
+                            <img src="https://placehold.co/800x500/121216/00f0ff?text=Servis+Laptop+HP" alt="Service" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-dark/80 backdrop-blur-md border border-accent-cyan/40 text-accent-cyan text-xs font-mono">Servis Hardware</span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-display font-bold text-xl text-white mb-2 group-hover:text-accent-cyan transition-colors">Pusat Servis HP & Laptop</h3>
+                            <p class="text-gray-400 text-sm mb-4 line-clamp-2">Solusi perbaikan teknis handal untuk memulihkan performa perangkat Anda.</p>
+                            <div class="flex items-center justify-between pt-4 border-t border-white/10 text-xs font-mono text-gray-400">
+                                <span>Hardware & Software</span>
+                                <span class="text-accent-cyan flex items-center gap-1">Detail <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card tcg-card rounded-2xl overflow-hidden group cursor-pointer border border-dark-border hover:border-accent-rose/50 transition-all bg-dark-card" onclick="openProjectModal('Produksi & Penyuntingan Video Kreatif', 'Adobe Premiere, CapCut, Motion Design', 'https://placehold.co/800x500/121216/ff2a6d?text=Video+Editing', 'Penyuntingan video sinematik untuk portofolio, konten kreatif, iklan komersial, dan media sosial.')">
+                        <div class="h-56 relative overflow-hidden bg-dark">
+                            <img src="https://placehold.co/800x500/121216/ff2a6d?text=Video+Production" alt="Video" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-dark/80 backdrop-blur-md border border-accent-rose/40 text-accent-rose text-xs font-mono">Video Editing</span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-display font-bold text-xl text-white mb-2 group-hover:text-accent-rose transition-colors">Produksi & Edit Video</h3>
+                            <p class="text-gray-400 text-sm mb-4 line-clamp-2">Visual sinematik dan transisi profesional yang memikat penonton.</p>
+                            <div class="flex items-center justify-between pt-4 border-t border-white/10 text-xs font-mono text-gray-400">
+                                <span>Cinematic Edit</span>
+                                <span class="text-accent-rose flex items-center gap-1">Detail <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="py-24 sm:py-28 px-4 sm:px-6 bg-dark relative border-t border-dark-border">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-16">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/30 text-emerald-400 text-xs font-mono mb-4">
+                        <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                        <span>HUBUNGI KAVINDRA</span>
+                    </div>
+                    <h2 class="font-display font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-white mb-4">Mari Berkolaborasi</h2>
+                    <p class="text-gray-400 text-sm">Punya pertanyaan, proyek web, butuh servis perangkat, atau edit video? Kirimkan pesan di sini.</p>
+                </div>
+
+                <div class="tcg-card p-6 sm:p-10 md:p-12 rounded-2xl relative border border-dark-border bg-dark-card">
+                    <form id="contact-form" onsubmit="handleContactSubmit(event)" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-mono text-gray-300 uppercase mb-2">Nama Anda</label>
+                                <input type="text" id="contact-name" required class="w-full bg-dark border border-dark-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent-gold transition-colors" placeholder="Masukkan nama...">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-mono text-gray-300 uppercase mb-2">Email / Kontak</label>
+                                <input type="text" id="contact-email" required class="w-full bg-dark border border-dark-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent-gold transition-colors" placeholder="email@domain.com / No HP">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-gray-300 uppercase mb-2">Layanan yang Dibutuhkan</label>
+                            <input type="text" id="contact-subject" required class="w-full bg-dark border border-dark-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent-gold transition-colors" placeholder="Contoh: Pembuatan Web / Servis Laptop / Edit Video">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-gray-300 uppercase mb-2">Pesan Detail</label>
+                            <textarea id="contact-message" rows="5" required class="w-full bg-dark border border-dark-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent-gold transition-colors" placeholder="Jelaskan kebutuhan proyek atau kendala perangkat Anda..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-accent-gold to-accent-purple text-black font-bold uppercase tracking-wider text-sm hover:opacity-90 transition-opacity shadow-lg shadow-accent-gold/20 flex items-center justify-center gap-2">
+                            <span>Kirim Pesan Sekarang</span>
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-12 px-4 sm:px-6 bg-dark-surface border-t border-dark-border text-center text-xs font-mono text-gray-500">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <p>&copy; 2026 Kavindra Maheswara. Hak cipta dilindungi undang-undang.</p>
+            <div class="flex items-center gap-6">
+                <a href="#hero" class="hover:text-accent-gold transition-colors">Kembali ke Atas</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL WINDOW -->
+    <div id="modal-overlay" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+        <div id="modal-container" class="tcg-card w-full max-w-2xl rounded-2xl p-6 sm:p-8 relative transform scale-95 opacity-0 transition-all duration-300 max-h-[90vh] overflow-y-auto border border-accent-gold/40 bg-dark-card">
+            <button onclick="closeModal()" class="absolute top-6 right-6 p-2 rounded-xl bg-dark border border-dark-border text-gray-400 hover:text-white transition-colors focus:outline-none">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        lucide.createIcons();
+
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.textContent = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3500);
+        }
+
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('contact-name').value;
+            showToast(`Terima kasih ${name}, pesan Anda berhasil dikirim!`);
+            document.getElementById('contact-form').reset();
+        }
+
+        function toggleCardFlip(cardElement) {
+            cardElement.classList.toggle('flipped');
+        }
+
+        const cardDataMap = {
+            about: {
+                title: "Kavindra Maheswara",
+                subtitle: "Full-Stack Developer & Tech Specialist",
+                icon: "user",
+                tag: "Profil Utama",
+                description: "Halo! Saya Kavindra Maheswara. Saya memiliki keahlian luas di bidang teknologi informasi mulai dari coding website modern, pembuatan aplikasi berbasis web, servis perbaikan perangkat keras (HP & Laptop), hingga penyuntingan video profesional.",
+                details: ["Keahlian Coding Web & Web Apps", "Spesialis Servis Hardware HP & Laptop", "Editor Video Kreatif & Profesional"]
+            },
+            webdev: {
+                title: "Coding Website & Aplikasi Web",
+                subtitle: "Pengembangan Front-End & Web Apps",
+                icon: "code",
+                tag: "Layanan 02",
+                description: "Menciptakan situs web responsif yang elegan serta aplikasi berbasis web interaktif. Fokus pada kecepatan muat, struktur bersih, dan kemudahan penggunaan di semua perangkat.",
+                details: ["HTML5, JavaScript, Tailwind CSS", "Pembuatan Sistem & Aplikasi Web Interaktif", "Desain Responsif & Mobile-Friendly"]
+            },
+            hardware: {
+                title: "Servis HP & Laptop",
+                subtitle: "Perbaikan Hardware & Software",
+                icon: "cpu",
+                tag: "Layanan 03",
+                description: "Menangani berbagai kendala teknis perangkat smartphone dan laptop Anda. Mulai dari masalah penggantian komponen, optimasi sistem, hingga pemeliharaan menyeluruh.",
+                details: ["Ganti Komponen, Layar & Baterai", "Troubleshooting & Flashing Software", "Perawatan Berkala & Optimalisasi Perangkat"]
+            },
+            video: {
+                title: "Penyuntingan Video",
+                subtitle: "Produksi & Editing Konten",
+                icon: "video",
+                tag: "Layanan 04",
+                description: "Menghasilkan video berkualitas tinggi dengan transisi sinematik, efek visual menarik, serta tata suara yang bersih untuk berbagai kebutuhan platform digital.",
+                details: ["Video Promosi & Iklan Komersial", "Konten Kreatif YouTube, TikTok & Reels", "Color Grading & Motion Graphics"]
+            },
+            contact: {
+                title: "Hubungi & Konsultasi",
+                subtitle: "Diskusikan Kebutuhan Anda",
+                icon: "mail",
+                tag: "Kontak Cepat",
+                description: "Tertarik menggunakan jasa coding web, servis perangkat, atau edit video? Hubungi saya melalui formulir atau diskusikan langsung kebutuhan Anda.",
+                details: ["Respons Cepat & Profesional", "Konsultasi Proyek & Servis", "Tersedia untuk Kerja Sama"]
+            }
+        };
+
+        function openCardModal(cardId) {
+            const data = cardDataMap[cardId];
+            if (!data) return;
+            const modalContent = document.getElementById('modal-content');
+            modalContent.innerHTML = `
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-accent-gold/10 border border-accent-gold/30 flex items-center justify-center text-accent-gold">
+                        <i data-lucide="${data.icon}" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-mono text-accent-gold uppercase tracking-widest">${data.tag}</span>
+                        <h3 class="font-display font-bold text-xl sm:text-2xl text-white">${data.title}</h3>
+                    </div>
+                </div>
+                <p class="text-gray-300 text-sm leading-relaxed mb-6">${data.description}</p>
+                <div class="space-y-3 mb-8">
+                    ${data.details.map(item => `
+                        <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-300 bg-dark p-3 rounded-xl border border-dark-border">
+                            <i data-lucide="check" class="w-4 h-4 text-accent-gold flex-shrink-0"></i>
+                            <span>${item}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <button onclick="closeModal()" class="w-full py-3 rounded-xl bg-accent-gold text-black font-semibold text-sm hover:opacity-95 transition-opacity">
+                    Tutup
+                </button>
+            `;
+            lucide.createIcons();
+            const overlay = document.getElementById('modal-overlay');
+            const container = document.getElementById('modal-container');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            setTimeout(() => {
+                container.classList.remove('scale-95', 'opacity-0');
+                container.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function openProjectModal(title, tech, image, description) {
+            const modalContent = document.getElementById('modal-content');
+            modalContent.innerHTML = `
+                <div class="mb-6 rounded-xl overflow-hidden h-48 sm:h-60 border border-dark-border">
+                    <img src="${image}" alt="${title}" class="w-full h-full object-cover">
+                </div>
+                <span class="text-xs font-mono text-accent-purple uppercase tracking-widest">${tech}</span>
+                <h3 class="font-display font-bold text-xl sm:text-2xl text-white mb-3">${title}</h3>
+                <p class="text-gray-300 text-sm leading-relaxed mb-6">${description}</p>
+                <div class="flex gap-4">
+                    <a href="#contact" onclick="closeModal()" class="flex-1 py-3 text-center rounded-xl bg-accent-gold text-black font-semibold text-sm hover:opacity-95 transition-opacity">
+                        Pesan Jasa Serupa
+                    </a>
+                    <button onclick="closeModal()" class="px-6 py-3 rounded-xl bg-dark border border-dark-border text-gray-300 hover:text-white font-semibold text-sm transition-colors">
+                        Tutup
+                    </button>
+                </div>
+            `;
+            lucide.createIcons();
+            const overlay = document.getElementById('modal-overlay');
+            const container = document.getElementById('modal-container');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            setTimeout(() => {
+                container.classList.remove('scale-95', 'opacity-0');
+                container.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('modal-overlay');
+            const container = document.getElementById('modal-container');
+            container.classList.remove('scale-100', 'opacity-100');
+            container.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                overlay.classList.remove('flex');
+                overlay.classList.add('hidden');
+            }, 300);
+        }
+
+        document.getElementById('modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-overlay') closeModal();
+        });
+
+        // GSAP SCROLLTRIGGER HERO ANIMATION
+        document.addEventListener('DOMContentLoaded', () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            const cards = gsap.utils.toArray('.portfolio-card');
+            const totalCards = cards.length;
+            const isMobile = window.innerWidth < 768;
+
+            cards.forEach((card, i) => {
+                const xOffset = isMobile ? (i - 2) * 20 : (i - 2) * 250;
+                const rotOffset = (i - 2) * 4;
+
+                gsap.set(card, {
+                    x: xOffset,
+                    y: 0,
+                    rotation: rotOffset,
+                    zIndex: i + 1,
+                    scale: 1
+                });
+            });
+
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: '#hero',
+                    start: 'top top',
+                    end: '+=2200',
+                    pin: true,
+                    scrub: 1,
+                    anticipatePin: 1,
+                    onUpdate: (self) => {
+                        const prompt = document.getElementById('scroll-prompt');
+                        if (prompt) {
+                            if (self.progress > 0.05) {
+                                prompt.style.opacity = '0';
+                            } else {
+                                prompt.style.opacity = '1';
+                            }
+                        }
+                    }
+                }
+            });
+
+            cards.forEach((card, i) => {
+                tl.to(card, {
+                    x: 0,
+                    y: (i - 2) * -3,
+                    rotation: (i - 2) * 1,
+                    scale: 1 - (Math.abs(i - 2) * 0.012),
+                    zIndex: totalCards + i,
+                    ease: 'power2.inOut',
+                    duration: 1
+                }, i * 0.15);
+            });
+        });
+    </script>
+</body>
+</html>
